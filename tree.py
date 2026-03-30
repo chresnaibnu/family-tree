@@ -7,9 +7,35 @@ from dotenv import load_dotenv
 
 # --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
 st.set_page_config(
-    page_title="Family Tree Visualizer",
-    layout="centered", # 'centered' lebih rapi untuk tampilan HP
+    page_title="Silsilah Keluarga", 
+    layout="wide",
     initial_sidebar_state="collapsed"
+)
+
+# 2. Sisipkan Meta Tag untuk mengaktifkan Zoom di Android
+st.markdown(
+    """
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    </head>
+    """,
+    unsafe_allow_html=True
+)
+
+# 3. Tambahkan CSS tambahan (opsional) agar container bagan bisa di-scroll manual
+st.markdown(
+    """
+    <style>
+    .main .block-container {
+        padding-top: 2rem;
+    }
+    iframe {
+        width: 100%;
+        height: auto;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
 # --- 2. KONFIGURASI SUPABASE ---
@@ -66,7 +92,7 @@ def get_all_connected_lineage(member_id, all_data):
 
 # --- 5. ANTARMUKA UTAMA ---
 # st.title("🌳 Silsilah Keluarga", text_alignment: TextAlignment.CENTER)
-st.html("<h1 style='text-align: center;'>🌳 Silsilah Keluarga Lawijah</h1>")
+st.html("<h1 style='text-align: center;'>🌳 Silsilah Keluarga</h1>")
 
 data = get_family_data()
 
@@ -136,12 +162,12 @@ else:
             label_html = f"""<
                 <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
                     <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
-                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
+                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="14">Gen {m['gen']}</FONT></TD></TR>
                 </TABLE>
             >"""
 
             dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
-                     shape="box", width="2.0", fontname="Arial")
+                    shape="box", width="2.0", fontname="Arial")
 
     # --- 7. PENGGAMBARAN EDGE (GARIS PERNIKAHAN) ---
     processed_couples = set()
