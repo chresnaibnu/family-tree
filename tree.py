@@ -7,37 +7,56 @@ import os
 from dotenv import load_dotenv
 
 def st_graphviz_zoomable(dot_string):
-    # Mengamankan string agar tidak merusak JavaScript template literal
     dot_string_cleaned = dot_string.replace('`', '\\`').replace('\n', ' ')
     
     html_code = f"""
-    <div id="graph" style="text-align: center;"></div>
+    <div id="graph_container" style="position: relative;">
+        <button onclick="openFullscreen();" style="
+            position: absolute; top: 10px; right: 10px; z-index: 100;
+            padding: 8px 12px; background: #fff; border: 1px solid #ccc; border-radius: 5px;
+            cursor: pointer; font-family: sans-serif; font-size: 12px;">
+            🔍 Layar Penuh (Bisa Zoom)
+        </button>
+        <div id="graph" style="text-align: center; border: 1px solid #eee; background: white;"></div>
+    </div>
+
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
     <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+    
     <script>
-        d3.select("#graph")
-            .graphviz()
-            .width(window.innerWidth - 40) // Memberi sedikit margin
+        var graphDiv = d3.select("#graph");
+        var render = graphDiv.graphviz()
+            .width(window.innerWidth - 20)
             .height(600)
             .fit(true)
             .zoom(true)
             .renderDot(`{dot_string_cleaned}`);
+
+        function openFullscreen() {{
+            var elem = document.getElementById("graph_container");
+            if (elem.requestFullscreen) {{
+                elem.requestFullscreen();
+            }} else if (elem.webkitRequestFullscreen) {{ /* Safari */
+                elem.webkitRequestFullscreen();
+            }} else if (elem.msRequestFullscreen) {{ /* IE11 */
+                elem.msRequestFullscreen();
+            }}
+        }}
     </script>
     <style>
-        #graph svg {{
-            width: 100%;
-            height: auto;
-            cursor: move;
-        }}
+        #graph svg {{ width: 100%; height: auto; cursor: move; }}
+        /* Pastikan saat fullscreen background tetap putih */
+        #graph_container:fullscreen {{ background: white; width: 100%; height: 100%; }}
+        #graph_container:fullscreen #graph {{ height: 100vh !important; }}
     </style>
     """
-    return components.html(html_code, height=620)
+    return components.html(html_code, height=650)
 
 # --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
 st.set_page_config(
     page_title="Family Tree Visualizer",
-    layout="wide", # 'centered' lebih rapi untuk tampilan HP
+    layout="centered", # 'centered' lebih rapi untuk tampilan HP
     initial_sidebar_state="collapsed"
 )
 
