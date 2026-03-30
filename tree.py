@@ -6,40 +6,10 @@ import graphviz
 import os
 from dotenv import load_dotenv
 
-# --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
-st.set_page_config(
-    page_title="Silsilah Keluarga", 
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
-
-# JavaScript untuk Memaksa Zoom di Android (Chrome/Brave)
-st.components.v1.html(
-    """
-    <script>
-        // Mencari tag viewport yang sudah ada atau membuat baru
-        var meta = document.querySelector('meta[name="viewport"]');
-        if (!meta) {
-            meta = document.createElement('meta');
-            meta.name = "viewport";
-            document.getElementsByTagName('head')[0].appendChild(meta);
-        }
-        // Paksa skala agar bisa di-zoom (user-scalable=yes)
-        meta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
-        
-        // Opsional: Memaksa zoom lewat event touch (jika browser sangat kaku)
-        document.addEventListener('touchstart', function(event) {
-            if (event.touches.length > 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
-    </script>
-    """,
-    height=0, # Agar tidak memakan ruang di UI
-)
-
-# 1. Fungsi untuk Merender Graphviz dengan Fitur Zoom & Pan Otomatis
 def st_graphviz_zoomable(dot_string):
+    # Mengamankan string agar tidak merusak JavaScript template literal
+    dot_string_cleaned = dot_string.replace('`', '\\`').replace('\n', ' ')
+    
     html_code = f"""
     <div id="graph" style="text-align: center;"></div>
     <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -47,12 +17,12 @@ def st_graphviz_zoomable(dot_string):
     <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
     <script>
         d3.select("#graph")
-        .graphviz()
-        .width(window.innerWidth)
-        .height(600)
-        .fit(true)
-        .zoom(true) // Menyalakan fitur Zoom & Pan secara Native
-        .renderDot(`{dot_string}`);
+            .graphviz()
+            .width(window.innerWidth - 40) // Memberi sedikit margin
+            .height(600)
+            .fit(true)
+            .zoom(true)
+            .renderDot(`{dot_string_cleaned}`);
     </script>
     <style>
         #graph svg {{
@@ -63,6 +33,13 @@ def st_graphviz_zoomable(dot_string):
     </style>
     """
     return components.html(html_code, height=620)
+
+# --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
+st.set_page_config(
+    page_title="Family Tree Visualizer",
+    layout="wide", # 'centered' lebih rapi untuk tampilan HP
+    initial_sidebar_state="collapsed"
+)
 
 # --- 2. KONFIGURASI SUPABASE ---
 load_dotenv()
@@ -188,7 +165,7 @@ else:
             label_html = f"""<
                 <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
                     <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
-                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="14">Gen {m['gen']}</FONT></TD></TR>
+                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
                 </TABLE>
             >"""
 
@@ -217,5 +194,4 @@ else:
                 dot.edge(m_id, m['fam_id'], color="#424242")
 
     # Tampilkan Chart
-    # st.graphviz_chart(dot, use_container_width=True)  
-    st_graphviz_zoomable(dot.source)
+    st.graphviz_chart(dot, use_container_width=True)
