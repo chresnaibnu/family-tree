@@ -6,27 +6,38 @@ import graphviz
 import os
 from dotenv import load_dotenv
 
-# 1. Render Graphviz ke format SVG (Byte)
-svg_bytes = dot.pipe(format='svg')
+# --- Di bagian bawah setelah semua node & edge ditambahkan ---
 
-# 2. Tampilkan sebagai gambar standar Streamlit
-# Streamlit akan menangani rendering-nya sebagai elemen <img> yang bisa di-zoom browser
-st.image(svg_bytes, use_container_width=True, caption="Tips: Tekan lama gambar untuk 'Open in New Tab' jika ingin zoom maksimal")
+try:
+    # Gunakan encoding='utf-8' untuk menghindari error karakter pada PC lama
+    svg_bytes = dot.pipe(format='svg', encoding='utf-8')
+    
+    # Tampilkan Gambar
+    st.image(svg_bytes, use_container_width=True)
+    
+    # Tombol Download sebagai cadangan
+    st.download_button(
+        label="📥 Download Bagan (SVG)",
+        data=svg_bytes,
+        file_name="silsilah_keluarga.svg",
+        mime="image/svg+xml"
+    )
+    
+    # Link Buka di Tab Baru (Untuk Zoom Maksimal di Android)
+    import base64
+    b64 = base64.b64encode(svg_bytes.encode('utf-8')).decode("utf-8")
+    st.markdown(
+        f'<a href="data:image/svg+xml;base64,{b64}" target="_blank">'
+        '<button style="width:100%; padding:10px; background-color:#4CAF50; color:white; border:none; border-radius:5px;">'
+        '🔍 Buka di Tab Baru untuk Zoom (Android)</button></a>',
+        unsafe_allow_html=True
+    )
 
-# 3. Opsional: Tambahkan tombol download untuk melihat file asli
-st.download_button(
-    label="Download Bagan (SVG)",
-    data=svg_bytes,
-    file_name="silsilah_keluarga.svg",
-    mime="image/svg+xml"
-)
-
-# --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
-st.set_page_config(
-    page_title="Family Tree Visualizer",
-    layout="centered", # 'centered' lebih rapi untuk tampilan HP
-    initial_sidebar_state="collapsed"
-)
+except Exception as e:
+    st.error(f"Gagal merender bagan: {e}")
+    st.info("Pastikan software Graphviz sudah terinstal di sistem (PATH).")
+    # Jika pipe gagal, gunakan render standar Streamlit sebagai fallback
+    st.graphviz_chart(dot)
 
 # --- 2. KONFIGURASI SUPABASE ---
 load_dotenv()
