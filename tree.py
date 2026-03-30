@@ -6,52 +6,20 @@ import graphviz
 import os
 from dotenv import load_dotenv
 
-def st_graphviz_zoomable(dot_string):
-    dot_string_cleaned = dot_string.replace('`', '\\`').replace('\n', ' ')
-    
-    html_code = f"""
-    <div id="graph_container" style="position: relative;">
-        <button onclick="openFullscreen();" style="
-            position: absolute; top: 10px; right: 10px; z-index: 100;
-            padding: 8px 12px; background: #fff; border: 1px solid #ccc; border-radius: 5px;
-            cursor: pointer; font-family: sans-serif; font-size: 12px;">
-            🔍 Layar Penuh (Bisa Zoom)
-        </button>
-        <div id="graph" style="text-align: center; border: 1px solid #eee; background: white;"></div>
-    </div>
+# 1. Render Graphviz ke format SVG (Byte)
+svg_bytes = dot.pipe(format='svg')
 
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
-    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
-    
-    <script>
-        var graphDiv = d3.select("#graph");
-        var render = graphDiv.graphviz()
-            .width(window.innerWidth - 20)
-            .height(600)
-            .fit(true)
-            .zoom(true)
-            .renderDot(`{dot_string_cleaned}`);
+# 2. Tampilkan sebagai gambar standar Streamlit
+# Streamlit akan menangani rendering-nya sebagai elemen <img> yang bisa di-zoom browser
+st.image(svg_bytes, use_container_width=True, caption="Tips: Tekan lama gambar untuk 'Open in New Tab' jika ingin zoom maksimal")
 
-        function openFullscreen() {{
-            var elem = document.getElementById("graph_container");
-            if (elem.requestFullscreen) {{
-                elem.requestFullscreen();
-            }} else if (elem.webkitRequestFullscreen) {{ /* Safari */
-                elem.webkitRequestFullscreen();
-            }} else if (elem.msRequestFullscreen) {{ /* IE11 */
-                elem.msRequestFullscreen();
-            }}
-        }}
-    </script>
-    <style>
-        #graph svg {{ width: 100%; height: auto; cursor: move; }}
-        /* Pastikan saat fullscreen background tetap putih */
-        #graph_container:fullscreen {{ background: white; width: 100%; height: 100%; }}
-        #graph_container:fullscreen #graph {{ height: 100vh !important; }}
-    </style>
-    """
-    return components.html(html_code, height=650)
+# 3. Opsional: Tambahkan tombol download untuk melihat file asli
+st.download_button(
+    label="Download Bagan (SVG)",
+    data=svg_bytes,
+    file_name="silsilah_keluarga.svg",
+    mime="image/svg+xml"
+)
 
 # --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
 st.set_page_config(
