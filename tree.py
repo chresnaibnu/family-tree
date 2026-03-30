@@ -190,4 +190,34 @@ else:
                 dot.edge(m_id, m['fam_id'], color="#424242")
 
     # Tampilkan Chart
-    st.graphviz_chart(dot, use_container_width=True)
+    # st.graphviz_chart(dot, use_container_width=True)
+
+    # 1. Tambahkan Slider Zoom di Sidebar atau Main Page
+    zoom_level = st.select_slider(
+        "Atur Perbesaran Bagan (Zoom)",
+        options=[0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0],
+        value=1.0
+    )
+
+    # 2. Sisipkan CSS Dinamis berdasarkan nilai Slider
+    st.markdown(f"""
+        <style>
+        /* Mencari elemen SVG Graphviz */
+        [data-testid="stGraphvizChart"] svg {{
+            transform: scale({zoom_level});
+            transform-origin: top left;
+            transition: transform 0.3s ease;
+        }}
+        /* Membuat kontainer agar bisa di-scroll saat gambar membesar */
+        [data-testid="stGraphvizChart"] {{
+            overflow: auto !important;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            height: 600px; /* Sesuaikan tinggi yang pas untuk HP */
+        }}
+        </style>
+    """, unsafe_allow_html=True)
+
+    # 3. Tampilkan Bagan
+    st.graphviz_chart(dot, use_container_width=False) # Set False agar CSS scale bekerja
