@@ -1,78 +1,9 @@
 from streamlit.elements.lib.layout_utils import TextAlignment
 import streamlit as st
-import streamlit.components.v1 as components
 from supabase import create_client
 import graphviz
 import os
 from dotenv import load_dotenv
-
-def st_graphviz_zoomable(dot_string):
-    dot_string_cleaned = dot_string.replace('`', '\\`').replace('\n', ' ')
-    
-    html_code = f"""
-    <div id="graph_container" style="position: relative;">
-        <button onclick="openFullscreen();" style="
-            position: absolute; top: 10px; right: 10px; z-index: 100;
-            padding: 8px 12px; background: #fff; border: 1px solid #ccc; border-radius: 5px;
-            cursor: pointer; font-family: sans-serif; font-size: 12px;">
-            🔍 Layar Penuh (Bisa Zoom)
-        </button>
-        <div id="graph" style="text-align: center; border: 1px solid #eee; background: white;"></div>
-    </div>
-
-    <script src="https://d3js.org/d3.v6.min.js"></script>
-    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
-    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
-    
-    <script>
-        var graphDiv = d3.select("#graph");
-
-        var zoom = d3.zoom()
-            .scaleExtent([0.1, 10])
-            .on("zoom", function(event) {{
-                d3.select("#graph svg")
-                .select("g")
-                .attr("transform", event.transform);
-            }});
-
-        var render = graphDiv.graphviz()
-            .width(window.innerWidth - 20)
-            .height(600)
-            .fit(true)
-            .zoom(false)
-            .renderDot(`{dot_string_cleaned}`)
-            .on("end", function () {{
-                var svg = d3.select("#graph svg");
-                var inner = svg.select("g");
-
-                if (!inner.empty()) {{
-                    svg.call(zoom);
-                }}
-            }});
-
-        function openFullscreen() {{
-            var elem = document.getElementById("graph_container");
-            if (elem.requestFullscreen) {{
-                elem.requestFullscreen();
-            }} else if (elem.webkitRequestFullscreen) {{ /* Safari */
-                elem.webkitRequestFullscreen();
-            }} else if (elem.msRequestFullscreen) {{ /* IE11 */
-                elem.msRequestFullscreen();
-            }}
-        }}
-    </script>
-    <style>
-        #graph svg {{ 
-            width: 100%;
-            height: auto;
-            cursor: move;
-            touch-action: none; }}
-        /* Pastikan saat fullscreen background tetap putih */
-        #graph_container:fullscreen {{ background: white; width: 100%; height: 100%; }}
-        #graph_container:fullscreen #graph {{ height: 100vh !important; }}
-    </style>
-    """
-    return components.html(html_code, height=650)
 
 # --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
 st.set_page_config(
@@ -135,7 +66,7 @@ def get_all_connected_lineage(member_id, all_data):
 
 # --- 5. ANTARMUKA UTAMA ---
 # st.title("🌳 Silsilah Keluarga", text_alignment: TextAlignment.CENTER)
-st.html("<h1 style='text-align: center;'>🌳 Silsilah Keluarga</h1>")
+st.html("<h1 style='text-align: center;'>🌳 Silsilah Keluarga Lawijah</h1>")
 
 data = get_family_data()
 
@@ -201,16 +132,27 @@ else:
             # Warna Pastel
             fill = "#FFF176" if is_target else ("#B3E5FC" if m['gend'] == 'L' else "#F8BBD0")
 
-            # Label HTML dengan Tabel (Bold & Center)
+            # --- Tentukan Ukuran Font di Sini ---
+            # Point-size 20 untuk nama agar lebih menonjol
+            # Point-size 14 untuk keterangan generasi
             label_html = f"""<
                 <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
-                    <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
-                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
+                    <TR>
+                        <TD ALIGN="CENTER">
+                            <FONT POINT-SIZE="20"><B>{m['name']}</B></FONT>
+                        </TD>
+                    </TR>
+                    <TR>
+                        <TD ALIGN="CENTER">
+                            <FONT POINT-SIZE="14">Gen {m['gen']}</FONT>
+                        </TD>
+                    </TR>
                 </TABLE>
             >"""
 
+            # Tambahkan width menjadi 2.5 atau 3.0 agar kotak cukup lebar untuk font besar
             dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
-                    shape="box", width="2.0", fontname="Arial")
+                    shape="box", width="2.8", fontname="Arial")
 
     # --- 7. PENGGAMBARAN EDGE (GARIS PERNIKAHAN) ---
     processed_couples = set()
@@ -234,5 +176,4 @@ else:
                 dot.edge(m_id, m['fam_id'], color="#424242")
 
     # Tampilkan Chart
-    # st.graphviz_chart(dot, use_container_width=True)
-    st_graphviz_zoomable(dot.source)
+    st.graphviz_chart(dot, use_container_width=True)
