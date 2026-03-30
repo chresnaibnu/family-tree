@@ -12,30 +12,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 2. Sisipkan Meta Tag untuk mengaktifkan Zoom di Android
-st.markdown(
+# JavaScript untuk Memaksa Zoom di Android (Chrome/Brave)
+st.components.v1.html(
     """
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    </head>
+    <script>
+        // Mencari tag viewport yang sudah ada atau membuat baru
+        var meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.name = "viewport";
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        }
+        // Paksa skala agar bisa di-zoom (user-scalable=yes)
+        meta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
+        
+        // Opsional: Memaksa zoom lewat event touch (jika browser sangat kaku)
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+    </script>
     """,
-    unsafe_allow_html=True
-)
-
-# 3. Tambahkan CSS tambahan (opsional) agar container bagan bisa di-scroll manual
-st.markdown(
-    """
-    <style>
-    .main .block-container {
-        padding-top: 2rem;
-    }
-    iframe {
-        width: 100%;
-        height: auto;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+    height=0, # Agar tidak memakan ruang di UI
 )
 
 # --- 2. KONFIGURASI SUPABASE ---
