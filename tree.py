@@ -6,40 +6,8 @@ import graphviz
 import os
 from dotenv import load_dotenv
 
-# --- Di bagian bawah setelah semua node & edge ditambahkan ---
 
-try:
-    # Gunakan encoding='utf-8' untuk menghindari error karakter pada PC lama
-    svg_bytes = dot.pipe(format='svg', encoding='utf-8')
-    
-    # Tampilkan Gambar
-    st.image(svg_bytes, use_container_width=True)
-    
-    # Tombol Download sebagai cadangan
-    st.download_button(
-        label="📥 Download Bagan (SVG)",
-        data=svg_bytes,
-        file_name="silsilah_keluarga.svg",
-        mime="image/svg+xml"
-    )
-    
-    # Link Buka di Tab Baru (Untuk Zoom Maksimal di Android)
-    import base64
-    b64 = base64.b64encode(svg_bytes.encode('utf-8')).decode("utf-8")
-    st.markdown(
-        f'<a href="data:image/svg+xml;base64,{b64}" target="_blank">'
-        '<button style="width:100%; padding:10px; background-color:#4CAF50; color:white; border:none; border-radius:5px;">'
-        '🔍 Buka di Tab Baru untuk Zoom (Android)</button></a>',
-        unsafe_allow_html=True
-    )
-
-except Exception as e:
-    st.error(f"Gagal merender bagan: {e}")
-    st.info("Pastikan software Graphviz sudah terinstal di sistem (PATH).")
-    # Jika pipe gagal, gunakan render standar Streamlit sebagai fallback
-    st.graphviz_chart(dot)
-
-# --- 2. KONFIGURASI SUPABASE ---
+# --- KONFIGURASI SUPABASE ---
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -159,16 +127,28 @@ else:
             # Warna Pastel
             fill = "#FFF176" if is_target else ("#B3E5FC" if m['gend'] == 'L' else "#F8BBD0")
 
-            # Label HTML dengan Tabel (Bold & Center)
-            label_html = f"""<
-                <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
-                    <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
-                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
-                </TABLE>
-            >"""
+        # --- SETTING UKURAN FONT DI SINI ---
+        name_font_size = "22"  # Ukuran font untuk Nama (Default biasanya 14)
+        gen_font_size = "16"   # Ukuran font untuk Teks Generasi
 
-            dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
-                    shape="box", width="2.0", fontname="Arial")
+        # Label HTML dengan tag FONT POINT-SIZE
+        label_html = f"""<
+            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+                <TR>
+                    <TD ALIGN="CENTER">
+                        <FONT POINT-SIZE="{name_font_size}"><B>{m['name']}</B></FONT>
+                    </TD>
+                </TR>
+                <TR>
+                    <TD ALIGN="CENTER">
+                        <FONT POINT-SIZE="{gen_font_size}">Gen {m['gen']}</FONT>
+                    </TD>
+                </TR>
+            </TABLE>
+        >"""
+
+        dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
+                shape="box", width="2.5", fontname="Arial") # 'width' diperbesar sedikit agar teks muat
 
     # --- 7. PENGGAMBARAN EDGE (GARIS PERNIKAHAN) ---
     processed_couples = set()
@@ -193,3 +173,35 @@ else:
 
     # Tampilkan Chart
     st.graphviz_chart(dot, use_container_width=True)
+
+    # --- Di bagian bawah setelah semua node & edge ditambahkan ---
+    try:
+        # Gunakan encoding='utf-8' untuk menghindari error karakter pada PC lama
+        svg_bytes = dot.pipe(format='svg', encoding='utf-8')
+        
+        # Tampilkan Gambar
+        st.image(svg_bytes, use_container_width=True)
+        
+        # Tombol Download sebagai cadangan
+        st.download_button(
+            label="📥 Download Bagan (SVG)",
+            data=svg_bytes,
+            file_name="silsilah_keluarga.svg",
+            mime="image/svg+xml"
+        )
+        
+        # Link Buka di Tab Baru (Untuk Zoom Maksimal di Android)
+        import base64
+        b64 = base64.b64encode(svg_bytes.encode('utf-8')).decode("utf-8")
+        st.markdown(
+            f'<a href="data:image/svg+xml;base64,{b64}" target="_blank">'
+            '<button style="width:100%; padding:10px; background-color:#4CAF50; color:white; border:none; border-radius:5px;">'
+            '🔍 Buka di Tab Baru untuk Zoom (Android)</button></a>',
+            unsafe_allow_html=True
+        )
+
+    except Exception as e:
+        st.error(f"Gagal merender bagan: {e}")
+        st.info("Pastikan software Graphviz sudah terinstal di sistem (PATH).")
+        # Jika pipe gagal, gunakan render standar Streamlit sebagai fallback
+        st.graphviz_chart(dot)
