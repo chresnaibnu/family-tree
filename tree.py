@@ -29,19 +29,19 @@ def st_graphviz_zoomable(dot_string):
 
         var zoom = d3.zoom()
             .scaleExtent([0.1, 10])
-            .on("zoom", function() {
-                d3.select("#graph svg g").attr("transform", d3.event.transform);
-            });
+            .on("zoom", function(event) {{
+                d3.select("#graph svg g").attr("transform", event.transform);
+            }});
 
         var render = graphDiv.graphviz()
             .width(window.innerWidth - 20)
             .height(600)
             .fit(true)
-            .zoom(true)
+            .zoom(false)
             .renderDot(`{dot_string_cleaned}`)
-            .on("end", function () {
+            .on("end", function () {{
                 d3.select("#graph svg").call(zoom);
-            });
+            }});
 
         function openFullscreen() {{
             var elem = document.getElementById("graph_container");
