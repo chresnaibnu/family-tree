@@ -1,5 +1,6 @@
 from streamlit.elements.lib.layout_utils import TextAlignment
 import streamlit as st
+import streamlit.components.v1 as components
 from supabase import create_client
 import graphviz
 import os
@@ -36,6 +37,32 @@ st.components.v1.html(
     """,
     height=0, # Agar tidak memakan ruang di UI
 )
+
+# 1. Fungsi untuk Merender Graphviz dengan Fitur Zoom & Pan Otomatis
+def st_graphviz_zoomable(dot_string):
+    html_code = f"""
+    <div id="graph" style="text-align: center;"></div>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+    <script>
+        d3.select("#graph")
+        .graphviz()
+        .width(window.innerWidth)
+        .height(600)
+        .fit(true)
+        .zoom(true) // Menyalakan fitur Zoom & Pan secara Native
+        .renderDot(`{dot_string}`);
+    </script>
+    <style>
+        #graph svg {{
+            width: 100%;
+            height: auto;
+            cursor: move;
+        }}
+    </style>
+    """
+    return components.html(html_code, height=620)
 
 # --- 2. KONFIGURASI SUPABASE ---
 load_dotenv()
@@ -190,34 +217,5 @@ else:
                 dot.edge(m_id, m['fam_id'], color="#424242")
 
     # Tampilkan Chart
-    # st.graphviz_chart(dot, use_container_width=True)
-
-    # 1. Tambahkan Slider Zoom di Sidebar atau Main Page
-    zoom_level = st.select_slider(
-        "Atur Perbesaran Bagan (Zoom)",
-        options=[0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0],
-        value=1.0
-    )
-
-    # 2. Sisipkan CSS Dinamis berdasarkan nilai Slider
-    st.markdown(f"""
-        <style>
-        /* Mencari elemen SVG Graphviz */
-        [data-testid="stGraphvizChart"] svg {{
-            transform: scale({zoom_level});
-            transform-origin: top left;
-            transition: transform 0.3s ease;
-        }}
-        /* Membuat kontainer agar bisa di-scroll saat gambar membesar */
-        [data-testid="stGraphvizChart"] {{
-            overflow: auto !important;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 10px;
-            height: 600px; /* Sesuaikan tinggi yang pas untuk HP */
-        }}
-        </style>
-    """, unsafe_allow_html=True)
-
-    # 3. Tampilkan Bagan
-    st.graphviz_chart(dot, use_container_width=False) # Set False agar CSS scale bekerja
+    # st.graphviz_chart(dot, use_container_width=True)  
+    st_graphviz_zoomable(dot.source)
