@@ -127,28 +127,16 @@ else:
             # Warna Pastel
             fill = "#FFF176" if is_target else ("#B3E5FC" if m['gend'] == 'L' else "#F8BBD0")
 
-        # --- SETTING UKURAN FONT DI SINI ---
-        name_font_size = "22"  # Ukuran font untuk Nama (Default biasanya 14)
-        gen_font_size = "16"   # Ukuran font untuk Teks Generasi
+            # Label HTML dengan Tabel (Bold & Center)
+            label_html = f"""<
+                <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+                    <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
+                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
+                </TABLE>
+            >"""
 
-        # Label HTML dengan tag FONT POINT-SIZE
-        label_html = f"""<
-            <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
-                <TR>
-                    <TD ALIGN="CENTER">
-                        <FONT POINT-SIZE="{name_font_size}"><B>{m['name']}</B></FONT>
-                    </TD>
-                </TR>
-                <TR>
-                    <TD ALIGN="CENTER">
-                        <FONT POINT-SIZE="{gen_font_size}">Gen {m['gen']}</FONT>
-                    </TD>
-                </TR>
-            </TABLE>
-        >"""
-
-        dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
-                shape="box", width="2.5", fontname="Arial") # 'width' diperbesar sedikit agar teks muat
+            dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
+                    shape="box", width="2.5", fontname="Arial")
 
     # --- 7. PENGGAMBARAN EDGE (GARIS PERNIKAHAN) ---
     processed_couples = set()
