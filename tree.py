@@ -20,18 +20,28 @@ def st_graphviz_zoomable(dot_string):
         <div id="graph" style="text-align: center; border: 1px solid #eee; background: white;"></div>
     </div>
 
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
     <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
     
     <script>
         var graphDiv = d3.select("#graph");
+
+        var zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", function() {
+                d3.select("#graph svg g").attr("transform", d3.event.transform);
+            });
+
         var render = graphDiv.graphviz()
             .width(window.innerWidth - 20)
             .height(600)
             .fit(true)
             .zoom(true)
-            .renderDot(`{dot_string_cleaned}`);
+            .renderDot(`{dot_string_cleaned}`)
+            .on("end", function () {
+                d3.select("#graph svg").call(zoom);
+            });
 
         function openFullscreen() {{
             var elem = document.getElementById("graph_container");
@@ -45,7 +55,11 @@ def st_graphviz_zoomable(dot_string):
         }}
     </script>
     <style>
-        #graph svg {{ width: 100%; height: auto; cursor: move; }}
+        #graph svg {{ 
+            width: 100%;
+            height: auto;
+            cursor: move;
+            touch-action: manipulation; }}
         /* Pastikan saat fullscreen background tetap putih */
         #graph_container:fullscreen {{ background: white; width: 100%; height: 100%; }}
         #graph_container:fullscreen #graph {{ height: 100vh !important; }}
@@ -213,4 +227,5 @@ else:
                 dot.edge(m_id, m['fam_id'], color="#424242")
 
     # Tampilkan Chart
-    st.graphviz_chart(dot, use_container_width=True)
+    # st.graphviz_chart(dot, use_container_width=True)
+    st_graphviz_zoomable(dot.source)
