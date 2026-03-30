@@ -30,7 +30,9 @@ def st_graphviz_zoomable(dot_string):
         var zoom = d3.zoom()
             .scaleExtent([0.1, 10])
             .on("zoom", function(event) {{
-                d3.select("#graph svg g").attr("transform", event.transform);
+                d3.select("#graph svg")
+                .select("g")
+                .attr("transform", event.transform);
             }});
 
         var render = graphDiv.graphviz()
@@ -40,7 +42,12 @@ def st_graphviz_zoomable(dot_string):
             .zoom(false)
             .renderDot(`{dot_string_cleaned}`)
             .on("end", function () {{
-                d3.select("#graph svg").call(zoom);
+                var svg = d3.select("#graph svg");
+                var inner = svg.select("g");
+
+                if (!inner.empty()) {{
+                    svg.call(zoom);
+                }}
             }});
 
         function openFullscreen() {{
@@ -59,7 +66,7 @@ def st_graphviz_zoomable(dot_string):
             width: 100%;
             height: auto;
             cursor: move;
-            touch-action: manipulation; }}
+            touch-action: none; }}
         /* Pastikan saat fullscreen background tetap putih */
         #graph_container:fullscreen {{ background: white; width: 100%; height: 100%; }}
         #graph_container:fullscreen #graph {{ height: 100vh !important; }}
