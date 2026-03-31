@@ -66,7 +66,7 @@ def get_all_connected_lineage(member_id, all_data):
 
 # --- 5. ANTARMUKA UTAMA ---
 # st.title("🌳 Silsilah Keluarga", text_alignment: TextAlignment.CENTER)
-st.html("<h1 style='text-align: center;'>🌳 Silsilah Keluarga Lawijah</h1>")
+st.html("<h1 style='text-align: center;'>🌳 Silsilah Keluarga</h1>")
 
 data = get_family_data()
 
@@ -133,26 +133,26 @@ else:
             fill = "#FFF176" if is_target else ("#B3E5FC" if m['gend'] == 'L' else "#F8BBD0")
 
             # --- Tentukan Ukuran Font di Sini ---
-            # Point-size 20 untuk nama agar lebih menonjol
-            # Point-size 14 untuk keterangan generasi
+            # Label HTML dengan Tabel (Bold & Center)
             label_html = f"""<
                 <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
-                    <TR>
-                        <TD ALIGN="CENTER">
-                            <FONT POINT-SIZE="20"><B>{m['name']}</B></FONT>
-                        </TD>
-                    </TR>
-                    <TR>
-                        <TD ALIGN="CENTER">
-                            <FONT POINT-SIZE="14">Gen {m['gen']}</FONT>
-                        </TD>
-                    </TR>
+                    <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
+                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
                 </TABLE>
             >"""
 
+            dot.node(m['fam_id'], label_html, 
+                style="filled, rounded", 
+                fillcolor=fill,
+                shape="box",
+                fixedsize="false",   # Memaksa ukuran kotak tetap 
+                fontname="Georgia",
+                margin="0.1",    # Kurangi margin agar kotak lebih pas dengan teks
+                fontsize="8")    # Paksa font global di node
+            
             # Tambahkan width menjadi 2.5 atau 3.0 agar kotak cukup lebar untuk font besar
-            dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
-                    shape="box", width="2.8", fontname="Arial")
+            # dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
+            #         shape="box", width="1.5", fontname="Arial")
 
     # --- 7. PENGGAMBARAN EDGE (GARIS PERNIKAHAN) ---
     processed_couples = set()
