@@ -8,34 +8,39 @@ import streamlit.components.v1 as components
 import json
 
 def st_graphviz_zoomable(dot_string):
-    dot_json = json.dumps(dot_string)  # 🔥 ini kunci (aman dari error string)
+    dot_json = json.dumps(dot_string)
 
     html_code = f"""
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <div id="graph" style="border:1px solid #eee; background:white;"></div>
+    <div id="graph" style="border:1px solid #eee; background:white; overflow:hidden;"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js"></script>
     <script src="https://d3js.org/d3.v6.min.js"></script>
-    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
-    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
 
     <script>
         const dot = {dot_json};
 
-        var graphDiv = d3.select("#graph");
+        const viz = new Viz();
 
-        var zoom = d3.zoom()
-            .scaleExtent([0.1, 10])
-            .on("zoom", function(event) {{
-                d3.select("#graph svg g").attr("transform", event.transform);
-            }});
+        viz.renderSVGElement(dot)
+            .then(function(element) {{
+                const container = document.getElementById("graph");
+                container.appendChild(element);
 
-        graphDiv.graphviz()
-            .fit(true)
-            .zoom(false)
-            .renderDot(dot)
-            .on("end", function () {{
-                d3.select("#graph svg").call(zoom);
+                const svg = d3.select("#graph svg");
+
+                const zoom = d3.zoom()
+                    .scaleExtent([0.1, 10])
+                    .on("zoom", function(event) {{
+                        svg.select("g").attr("transform", event.transform);
+                    }});
+
+                svg.call(zoom);
+            }})
+            .catch(error => {{
+                document.getElementById("graph").innerHTML = "<pre>" + error + "</pre>";
             }});
     </script>
 
