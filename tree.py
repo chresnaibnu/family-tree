@@ -5,12 +5,13 @@ import graphviz
 import os
 from dotenv import load_dotenv
 import streamlit.components.v1 as components
+import json
 
 def st_graphviz_zoomable(dot_string):
-    dot_string_cleaned = dot_string.replace('`', '\\`').replace('\n', ' ')
-    
+    dot_json = json.dumps(dot_string)  # 🔥 ini kunci (aman dari error string)
+
     html_code = f"""
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <div id="graph" style="border:1px solid #eee; background:white;"></div>
 
@@ -19,6 +20,8 @@ def st_graphviz_zoomable(dot_string):
     <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
 
     <script>
+        const dot = {dot_json};
+
         var graphDiv = d3.select("#graph");
 
         var zoom = d3.zoom()
@@ -30,7 +33,7 @@ def st_graphviz_zoomable(dot_string):
         graphDiv.graphviz()
             .fit(true)
             .zoom(false)
-            .renderDot(`{dot_string_cleaned}`)
+            .renderDot(dot)
             .on("end", function () {{
                 d3.select("#graph svg").call(zoom);
             }});
