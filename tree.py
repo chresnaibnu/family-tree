@@ -4,6 +4,47 @@ from supabase import create_client
 import graphviz
 import os
 from dotenv import load_dotenv
+import streamlit.components.v1 as components
+
+def st_graphviz_zoomable(dot_string):
+    dot_string_cleaned = dot_string.replace('`', '\\`').replace('\n', ' ')
+    
+    html_code = f"""
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+
+    <div id="graph" style="border:1px solid #eee; background:white;"></div>
+
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+
+    <script>
+        var graphDiv = d3.select("#graph");
+
+        var zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", function(event) {{
+                d3.select("#graph svg g").attr("transform", event.transform);
+            }});
+
+        graphDiv.graphviz()
+            .fit(true)
+            .zoom(false)
+            .renderDot(`{dot_string_cleaned}`)
+            .on("end", function () {{
+                d3.select("#graph svg").call(zoom);
+            }});
+    </script>
+
+    <style>
+        #graph svg {{
+            width: 100%;
+            height: auto;
+            touch-action: none;
+        }}
+    </style>
+    """
+    return components.html(html_code, height=650)
 
 # --- 1. KONFIGURASI HALAMAN (Mobile Friendly) ---
 st.set_page_config(
@@ -176,4 +217,5 @@ else:
                 dot.edge(m_id, m['fam_id'], color="#424242")
 
     # Tampilkan Chart
-    st.graphviz_chart(dot, use_container_width=True)
+    # st.graphviz_chart(dot, use_container_width=True)
+    st_graphviz_zoomable(dot.source)
