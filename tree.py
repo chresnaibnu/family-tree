@@ -180,13 +180,21 @@ else:
             is_target = (search_query and m['name'] == search_query)
             # Warna Pastel
             fill = "#FFF176" if is_target else ("#B3E5FC" if m['gend'] == 'L' else "#F8BBD0")
-
+        
             # --- Tentukan Ukuran Font di Sini ---
             # Label HTML dengan Tabel (Bold & Center)
             label_html = f"""<
                 <TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
-                    <TR><TD ALIGN="CENTER"><B>{m['name']}</B></TD></TR>
-                    <TR><TD ALIGN="CENTER"><FONT POINT-SIZE="10">Gen {m['gen']}</FONT></TD></TR>
+                    <TR>
+                        <TD ALIGN="Left" VALIGN="MIDDLE">
+                            <FONT FACE="Arial" POINT-SIZE="16"><B>{m['name']}</B></FONT>
+                        </TD>
+                    </TR>
+                    <TR>
+                        <TD ALIGN="CENTER">
+                            <FONT FACE="Arial" POINT-SIZE="12">Gen {m['gen']}</FONT>
+                        </TD>
+                    </TR>
                 </TABLE>
             >"""
 
@@ -196,8 +204,8 @@ else:
                 shape="box",
                 fixedsize="false",   # Memaksa ukuran kotak tetap 
                 fontname="Georgia",
-                margin="0.1",    # Kurangi margin agar kotak lebih pas dengan teks
-                fontsize="8")    # Paksa font global di node
+                margin="0.2",    # Kurangi margin agar kotak lebih pas dengan teks
+                fontsize="3")    # Paksa font global di node
             
             # Tambahkan width menjadi 2.5 atau 3.0 agar kotak cukup lebar untuk font besar
             # dot.node(m['fam_id'], label_html, style="filled", fillcolor=fill,
